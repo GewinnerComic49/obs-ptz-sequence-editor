@@ -23,11 +23,15 @@ bool obs_module_load()
 	ptz_load_action_source();
 	ptz_load_controls();
 	ptz_load_settings();
+	ptz_load_sequences();
+	ptz_load_sequence_menu();
 	return true;
 }
 
 void obs_module_unload()
 {
+	ptz_sequence_editor_destroy();
+	ptz_unload_sequences();
 	ptz_unload_devices();
 	blog(LOG_INFO, "plugin unloaded");
 }

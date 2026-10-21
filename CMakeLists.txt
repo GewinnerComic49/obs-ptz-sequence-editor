@@ -106,6 +106,8 @@ target_sources(
     src/ptz-action-source.c
     src/circularlistview.cpp
     src/touch-control.cpp
+    src/ptz-sequence.cpp
+    src/ptz-sequence-editor.cpp
     src/ptz.h
     src/ptz-controls.hpp
     src/ptz-device.hpp
@@ -118,6 +120,8 @@ target_sources(
     src/protocol-helpers.hpp
     src/circularlistview.hpp
     src/touch-control.hpp
+    src/ptz-sequence.hpp
+    src/ptz-sequence-editor.hpp
 )
 
 option(ENABLE_USB_CAM "Enable USB camera support" ON)

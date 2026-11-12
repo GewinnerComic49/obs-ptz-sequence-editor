@@ -1,0 +1,43 @@
+name: Publish keyframe Windows release
+on:
+  push:
+    branches: [publish-keyframe-release-0.19.2]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download the verified Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: obs-ptz-keyframes-windows-x64
+          run-id: 43226006689
+          github-token: ${{ github.token }}
+          path: release-assets
+      - name: Verify installer checksum and generate download checksums
+        shell: python
+        run: |
+          from pathlib import Path
+          import hashlib
+          root = Path('release-assets')
+          installer = root / 'obs-ptz-0.19.2-windows-x64-Installer.exe'
+          assert hashlib.sha256(installer.read_bytes()).hexdigest() == 'd1f2b47de516048f85f627bb39cd24ed60082dce10eb6b8c5130f37a9a19ed4c', 'Installer checksum mismatch'
+          names = ['obs-ptz-0.19.2-windows-x64-Installer.exe', 'obs-ptz-0.19.2-windows-x64.zip']
+          (root / 'SHA256SUMS.txt').write_text(''.join(f'{hashlib.sha256((root / n).read_bytes()).hexdigest()}  {n}\n' for n in names))
+      - name: Publish release and changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create v0.19.2-keyframes.1 \
+            release-assets/obs-ptz-0.19.2-windows-x64-Installer.exe \
+            release-assets/obs-ptz-0.19.2-windows-x64.zip \
+            release-assets/SHA256SUMS.txt \
+            --target ad2dba94a0b03bc1c6eb25a3d8f75ab303dcd841 \
+            --title 'obs-ptz 0.19.2 – Sequenz- und Keyframe-Editor (Windows x64)' \
+            --notes-file RELEASE-NOTES-KEYFRAMES.md \
+            --latest

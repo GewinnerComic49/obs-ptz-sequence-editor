@@ -1,0 +1,51 @@
+name: Build keyframe Windows installer
+run-name: Keyframe Windows x64 installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [keyframe-editor-0.19.2]
+permissions:
+  contents: read
+jobs:
+  windows-installer:
+    name: Windows x64 plugin and Inno Setup installer
+    runs-on: windows-2022
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: Build with project Windows build action
+        uses: ./.github/actions/build-plugin
+        with:
+          target: x64
+          config: RelWithDebInfo
+      - name: Package with project Inno Setup action
+        uses: ./.github/actions/package-plugin
+        with:
+          target: x64
+          config: RelWithDebInfo
+          package: 'true'
+      - name: Verify installer and plugin were produced
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $Installers = @(Get-ChildItem release/*-windows-x64-Installer.exe)
+          if ($Installers.Count -ne 1) { throw 'Expected exactly one Windows installer EXE' }
+          $Plugins = @(Get-ChildItem release/RelWithDebInfo -Filter *.dll -Recurse)
+          if ($Plugins.Count -eq 0) { throw 'No compiled plugin DLL was produced' }
+          if ($Installers[0].Length -eq 0) { throw 'Installer is empty' }
+          Get-FileHash $Installers[0].FullName -Algorithm SHA256 |
+            Format-List | Out-File release/installer-sha256.txt -Encoding utf8
+      - name: Upload installer and portable plugin archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: obs-ptz-keyframes-windows-x64
+          if-no-files-found: error
+          path: |
+            release/*-windows-x64-Installer.exe
+            release/*-windows-x64.zip
+            release/installer-sha256.txt

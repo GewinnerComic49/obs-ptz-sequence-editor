@@ -25,6 +25,11 @@ extern void ptz_unload_devices(void);
 extern void ptz_load_action_source(void);
 extern void ptz_load_controls(void);
 extern void ptz_load_settings(void);
+extern void ptz_load_sequences(void);
+extern void ptz_unload_sequences(void);
+extern void ptz_load_sequence_menu(void);
+extern void ptz_sequence_editor_show(void);
+extern void ptz_sequence_editor_destroy(void);
 
 extern obs_data_array_t *ptz_devices_get_config(void);
 extern obs_source_t *ptz_device_find_source_using_ptz_name(uint32_t device_id);

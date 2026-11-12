@@ -1111,6 +1111,8 @@ void PTZControls::on_cameraList_customContextMenuRequested(const QPoint &pos)
 		connect(blockliveAction, &QAction::toggled, this, &PTZControls::setLiveMoveLockEnabled);
 	}
 	context.addAction(ui->actionProperties);
+	QAction *sequenceAction = context.addAction(obs_module_text("PTZ.Seq.MenuTitle"));
+	connect(sequenceAction, &QAction::triggered, []() { ptz_sequence_editor_show(); });
 	QAction *action = context.exec(globalpos);
 
 	if (action == nullptr)

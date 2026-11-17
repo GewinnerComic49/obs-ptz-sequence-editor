@@ -129,6 +129,23 @@ function(_setup_obs_studio)
     )
   endif()
 
+  # OBS 32.0.4 reads the double member of a union for a boolean property.
+  # Fix the upstream typo before compiling (MSVC 18 reports C4244/C2220).
+  if(_obs_version VERSION_EQUAL "32.0.4")
+    set(_obs_properties "${dependencies_dir}/${_obs_destination}/libobs/obs-properties.c")
+    file(READ "${_obs_properties}" _obs_properties_source)
+    string(
+      REPLACE
+      "return (data && idx < data->items.num) ? data->items.array[idx].d : false;"
+      "return (data && idx < data->items.num) ? data->items.array[idx].b : false;"
+      _obs_properties_patched
+      "${_obs_properties_source}"
+    )
+    if(NOT _obs_properties_source STREQUAL _obs_properties_patched)
+      file(WRITE "${_obs_properties}" "${_obs_properties_patched}")
+    endif()
+  endif()
+
   message(STATUS "Configure ${label} (${arch})")
   execute_process(
     COMMAND
